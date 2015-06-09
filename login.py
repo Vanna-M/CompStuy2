@@ -3,6 +3,7 @@
 # ========= (Must be first line of file.) =========
 print "Content-Type: text/html\n\n"
 
+import hashlib
 import cgi
 import cgitb
 cgitb.enable()  #diag info --- comment out once full functionality achieved
@@ -23,6 +24,16 @@ def FStoD():
 
 
 d = FStoD()
+
+def md5Pass(password):#takes a password input and returns a hashed version
+    m = hashlib.md5()
+    m.update(password)
+    return m.hexdigest()
+
+enteredUser = d['user']
+enteredPass = d['pass']
+enteredPass = md5Pass(enteredPass)
+
 proper = '''<!DOCTYPE html>\n
 <html>\n
    <head>\n
@@ -39,7 +50,7 @@ proper = '''<!DOCTYPE html>\n
          <br>\n
          <input type="submit" value="Log In"\n
          <br><br><br>\n
-         <a href="lisa.stuy.edu/~jessica.yang/proj/create.html">Sign Up Here</a> \n
+         <a href="create.html">Sign Up Here</a> \n
       </form>\n
    </body>\n
 </html> '''
@@ -60,7 +71,7 @@ wrongPass = '''<!DOCTYPE html>\n
          <br>\n
          <input type="submit" value="Log In"\n
          <br><br><br>\n
-         <a href="lisa.stuy.edu/~jessica.yang/proj/create.html">Sign Up Here</a> \n
+         <a href="create.html">Sign Up Here</a> \n
       </form>\n
    </body>\n
 </html> '''
@@ -81,7 +92,7 @@ noUser = '''<!DOCTYPE html>\n
          <br>\n
          <input type="submit" value="Log In"\n
          <br><br><br>\n
-         <a href="lisa.stuy.edu/~jessica.yang/proj/create.html">Sign Up Here</a> \n
+         <a href="create.html">Sign Up Here</a> \n
       </form>\n
    </body>\n
 </html> ''' 
@@ -91,12 +102,12 @@ def usercheck():
     userInfo = userData.readlines()
     userData.close()
     for dataset in userInfo:
-        if d['user'] in dataset:#if your username exists
-            if dataset[1] == d['pass']:#if you check out
+        if enteredUser in dataset:#if your username exists
+            if dataset[1] == enteredPass:#if you check out
                 return proper #you're in
             else:
                 return wrongPass#wrong password
-        else:#your username doesn't exist
-            return noUser
+    #else:#your username doesn't exist
+    return noUser
     
 print usercheck()
