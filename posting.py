@@ -75,7 +75,7 @@ def continuePost(post):
 <header><title>Make a Post</title></header> \n
 <body> \n
     <form name="input" method="POST" action="posting.py" required>
-        <input type="text" name="post" value="'''+str(actualPost)+boldSet + italicSet + underlineSet+'''">\n
+        <input type="text" name="post" value="'''+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S')+str(actualPost)+boldSet + italicSet + underlineSet+'''">\n
         <p> <input type="submit" name="bold" value="Bold"><br>\n
             <input type="submit" name="endbld" value="End Bold"><br>\n
     		<input type="submit" name="und" value="Underline"><br>\n
