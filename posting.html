@@ -1,18 +1,30 @@
-<!DOCTYPE html>
-<html> 
-<header><title>Make a Post</title></header> 
-<body> 
-
-    <form name="input" method="POST" action="posting.py">
-        <input type="text" name="post" Placeholder="Post here" required>
-        <p> <input type="submit" name="bold" value="Bold"><br>
-            <input type="submit" name="endbld" value="End Bold"><br>
-    <input type="submit" name="und" value="Underline"><br>
-            <input type="submit" name="endun" value="End Underline"><br>
-            <input type="submit" name="it" value="Italicize"><br>
-            <input type="submit" name="endita" value="End Italics"><br>
-            <input type="submit" name="fred" value="Submit">
-    </form>
-    
-</body>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"  "http://www.w3.org/TR/html4/loose.dtd">
+<!--- This is code from the Internet, because idk how to get selected text from the browser. Parts of the code were modified to fit the purpose.  -->
+<html>
+   <head>
+      <title>User | Post</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta http-equiv="Content-Style-Type" content="text/css">
+      <meta http-equiv="Content-Script-Type" content="text/javascript">
+      <script type="text/javascript">
+         function formatText (el,tag) {
+         var selectedText=document.selection?document.selection.createRange().text:el.value.substring(el.selectionStart,el.selectionEnd);
+         if (selectedText!='') {
+         var newText='<'+tag+'>'+selectedText+'</'+tag+'>';
+         el.value=el.value.replace(selectedText,newText)
+         }
+         }
+      </script>
+   </head>
+   <body>
+      <form name="myPost" method="POST" action="posting.py">
+         Highlight the code you want to format. Hover over the buttons for more details ... <br><br>
+         <textarea name="postText" rows = "5" cols = "50" placeholder="Post here ..." required></textarea><br>
+         <span title="Select text you want to bold, and click this button."><input type="button" value="Bold" onclick="formatText (postText,'b');" /></span>
+         <span title="Select text you want to italicize, and click this button."><input type="button" value="Italicize" onclick="formatText (postText,'i');" /></span>
+         <span title="Select text you want to underline, and click this button."><input type="button" value="Underline" onclick="formatText (postText,'u');" /></span>
+         <br><br>
+         <input type="submit" value="Post">
+      </form>
+   </body>
 </html>
