@@ -1,12 +1,29 @@
 #!/usr/bin/python
 # ========= HASHBANG LINE ABOVE IS MAGIC! =========
 # ========= (Must be first line of file.) =========
-print "Content-Type: text/html\n\n"
 
-import hashlib
+import os
 import cgi
 import cgitb
 cgitb.enable()  #diag info --- comment out once full functionality achieved
+
+ #####################################################
+ ## Back-End Script for USER ACCOUNT CREATION
+ ## by
+ ##   ___|  |             |                            
+ ##  |      |  |   |   _` |   _ \                      
+ ##  |      |  |   |  (   |   __/                      
+ ## \____| _| \__, | \__,_| \___|                      
+ ##  | ) __ __|__|/     |          _|   _|         | ) 
+ ## V V     |    __ \   |  |   |  |    |    |   | V V  
+ ##         |    | | |  |  |   |  __|  __|  |   |      
+ ##        _|   _| |_| _| \__,_| _|   _|   \__, |      
+ ##   ___|  _)               |        _)   ____/       
+ ## \___ \   |  __ \    __|  |   _` |  |   __|         
+ ##       |  |  |   |  (     |  (   |  |  |            
+ ## _____/  _| _|  _| \___| _| \__,_| _| _|            
+ #####################################################
+
 
 # ~~~~~~~~~~~~~~~ support functions ~~~~~~~~~~~~~~~
 def FStoD():
@@ -21,93 +38,94 @@ def FStoD():
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
+# ~~~~~~~~~~~~~~~ auxiliary files ~~~~~~~~~~~~~~~~~
+#file to store users and their passwords:
+userfile="users.csv"
+
+#file to store users currently logged in:
+currentUsersFile="loggedin.csv" 
+
+#login page:
+loginPage="login.html" 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#store querystring var/val pairs in dictionary
+fsd=FStoD()
 
 
-d = FStoD()
+#validate user input
+def valid():
+    if not ('uname' in fsd) or not ('upass1' in fsd) or not ('upass2' in fsd):
+        return False    
+    if fsd['uname'] == '':
+        return False
+    if fsd['upass1'] != fsd['upass2']:
+        return False
+    return True
 
-def md5Pass(password):#takes a password input and returns a hashed version
-    m = hashlib.md5()
-    m.update(password)
-    return m.hexdigest()
 
-enteredUser = d['user']
-enteredPass = d['pass']
-enteredPass = md5Pass(enteredPass)
+#check for existence of a user in CSV file
+def userExists(u):
+    try:
+        userlist = open(userfile,'r').readlines()
+    except:
+        return False
+    for row in userlist:
+        if row.strip().split(',')[0]==u:
+            return True
+    return False
 
-proper = '''<!DOCTYPE html>\n
-<html>\n
-   <head>\n
-      <title>SOCIAL NETWORK | Log In</title>\n
-   </head>\n
-   <body>\n
-   <p><font color="red">You did it!!!</font></p>\n
-      <form name="input" method="POST" action="login.py">\n
-         Username:\n
-         <input type="text" name="user" placeholder="" required>\n
-         <br>\n
-         Password:\n
-         <input type="password" name="pass" placeholder="" required>\n
-         <br>\n
-         <input type="submit" value="Log In"\n
-         <br><br><br>\n
-         <a href="create.html">Sign Up Here</a> \n
-      </form>\n
-   </body>\n
-</html> '''
 
-wrongPass = '''<!DOCTYPE html>\n
-<html>\n
-   <head>\n
-      <title>SOCIAL NETWORK | Log In</title>\n
-   </head>\n
-   <body>\n
-   <p><font color="red">Password does not match username. Try again.</font></p>\n
-      <form name="input" method="POST" action="login.py">\n
-         Username:\n
-         <input type="text" name="user" placeholder="" required>\n
-         <br>\n
-         Password:\n
-         <input type="password" name="pass" placeholder="" required>\n
-         <br>\n
-         <input type="submit" value="Log In"\n
-         <br><br><br>\n
-         <a href="create.html">Sign Up Here</a> \n
-      </form>\n
-   </body>\n
-</html> '''
+#create a user, as long as she does not yet exist
+def createUser(u,p):
+    u = u.lower()
+    if userExists(u):
+        return False
+    try: 
+        f = open(userfile,'a')
+        f.write(u + "," + p + "\n")
+        f.close()
+    except:
+        return False
+    return True
 
-noUser = '''<!DOCTYPE html>\n
-<html>\n
-   <head>\n
-      <title>SOCIAL NETWORK | Log In</title>\n
-   </head>\n
-   <body>\n
-   <p><font color="red">You do not exist. Register in the link below. </font></p>\n
-      <form name="input" method="POST" action="login.py">\n
-         Username:\n
-         <input type="text" name="user" placeholder="" required>\n
-         <br>\n
-         Password:\n
-         <input type="password" name="pass" placeholder="" required>\n
-         <br>\n
-         <input type="submit" value="Log In"\n
-         <br><br><br>\n
-         <a href="create.html">Sign Up Here</a> \n
-      </form>\n
-   </body>\n
-</html> ''' 
+#create a profile page for this user
+def createProfile(name):
+    user = str(name)
+    userFile = user +".html"
+    userFile = open(userFile,'w')#creates a new file with the name userFile
+    userFile.write('''<!DOCTYPE html>
+    <html> 
+    <header><title>''' + user + '''</title></header> 
+    <body> ''' + user + '''s profile page</body>
+    </html>''')
+    userFile.close()
 
-def usercheck():
-    userData = open('userInfo.csv', 'r')
-    userInfo = userData.readlines()
-    userData.close()
-    for dataset in userInfo:
-        if enteredUser in dataset:#if your username exists
-            if dataset[1] == enteredPass:#if you check out
-                return proper #you're in
-            else:
-                return wrongPass#wrong password
-    #else:#your username doesn't exist
-    return noUser
-    
-print usercheck()
+# ========= CONTENT-TYPE LINE REQUIRED. ===========
+# ======= Must be beginning of HTML string ======== 
+htmlStr = "Content-Type: text/html\n\n" #NOTE there are 2 '\n's !!! 
+htmlStr += "<html><head><title> User Account Creation Results </title></head></html>\n"
+htmlStr += "<body>"
+
+# ~~~~~~~~~~~~~ HTML-generating code ~~~~~~~~~~~~~~
+#htmlStr += "<h4>Dictionary of form data:</h4>"
+#htmlStr += str( fsd )
+#htmlStr += str( userExists(fsd[uname]) )
+if not valid():
+    htmlStr += "invalid input"
+else:
+    if createUser( fsd['uname'], fsd['upass1'] ):
+        htmlStr += "<h3>Account created. You're in!</h3>"
+        htmlStr += '<br>Click <a href="'+ loginPage + '">'
+        htmlStr += "here</a> to log in."
+        createProfile( fsd['uname'])
+    else:
+        htmlStr += '<br> Account creation failed. Username taken. Click back or click <a href=createAcct.html> here </a> to try again <p> Already have an account? Log in <a href=login.html> here!</a></p>'
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+htmlStr += "</body></html>"
+
+
+print htmlStr
